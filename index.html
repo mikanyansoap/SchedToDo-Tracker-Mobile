@@ -1,179 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Schedule Widget</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#8b5cf6">
-  <link rel="apple-touch-icon" href="icon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduler App</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body class="theme-midnight">
-  <!-- The HTML is mostly the same as resources/index.html but without Qt-specific buttons -->
-  <!-- I will use the same content but hide/remove the title bar buttons for mobile -->
-
-  <div class="app-container">
-    <div class="header">
-      <div id="drag-region" style="padding: 10px 0;">
-        <span class="header-title">Campus Hub</span>
-      </div>
-      <div class="window-controls">
-         <button class="ctrl-btn" id="btn-settings">⚙️</button>
-      </div>
-    </div>
-
-    <!-- Clock Section -->
-    <div class="clock-section">
-      <div class="clock-time" id="clock-time">00:00</div>
-      <div class="clock-date-row">
-        <span id="clock-date">Month 00, 202X</span>
-        <span class="dot-sep"></span>
-        <span id="clock-day">Day</span>
-      </div>
-    </div>
-
-    <!-- Status Ticker -->
-    <div class="status-ticker">
-      <div class="status-indicator"></div>
-      <span id="today-status-text">Loading schedule...</span>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs-nav">
-      <button class="tab-btn active" id="tab-schedule">Agenda</button>
-      <button class="tab-btn" id="tab-calendar">Calendar</button>
-      <button class="tab-btn" id="tab-tasks">Tasks</button>
-      <button class="tab-btn" id="tab-pulse">Pulse</button>
-    </div>
-
-    <!-- Views -->
-    <div class="view-content">
-      <div id="view-schedule" class="view">
-        <div id="course-list" class="course-list"></div>
-        <div id="empty-state" class="empty-state" style="display:none">
-          <div class="empty-icon">📅</div>
-          <p>No classes scheduled today.</p>
-        </div>
-      </div>
-      <div id="view-calendar" class="view" style="display:none">
-        <!-- Simplified calendar for mobile -->
-        <div class="calendar-header">
-           <button id="cal-prev">ᐸ</button>
-           <span id="cal-month-year">...</span>
-           <button id="cal-next">ᐳ</button>
-        </div>
-        <div class="calendar-grid" id="cal-grid"></div>
-      </div>
-      <div id="view-tasks" class="view" style="display:none">
-        <div class="tasks-header">
-          <select id="tasks-filter">
-             <option value="pending">Pending</option>
-             <option value="done">Completed</option>
-             <option value="all">All Tasks</option>
-          </select>
-          <select id="tasks-sort">
-             <option value="course">By Course</option>
-             <option value="newest">Newest First</option>
-          </select>
-        </div>
-        <div id="all-tasks-list" class="all-tasks-list"></div>
-      </div>
-      <div id="view-pulse" class="view" style="display:none">
-        <div class="pulse-grid">
-           <div class="pulse-card">
-              <div class="pulse-label">Done</div>
-              <div class="pulse-value" id="pulse-tasks-done">0</div>
-           </div>
-           <div class="pulse-card">
-              <div class="pulse-label">Pending</div>
-              <div class="pulse-value" id="pulse-tasks-left">0</div>
-           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Add -->
-    <button class="fab-add" id="btn-add">+</button>
-  </div>
-
-  <!-- Modal: Course Form -->
-  <div class="modal" id="modal-form">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="modal-title" id="form-title">Add Entry</span>
-        <button class="modal-close" id="modal-form-close">×</button>
-      </div>
-      <form id="course-form">
-        <input type="hidden" id="form-id">
-        <div class="type-switcher">
-          <button type="button" class="type-btn active" data-type="course">Class</button>
-          <button type="button" class="type-btn" data-type="event">Event</button>
-        </div>
-        <div class="form-group">
-          <label id="label-name">Course Name</label>
-          <input type="text" id="form-name" required placeholder="e.g. Calculus">
-        </div>
-        <!-- Simplified days for mobile -->
-        <div class="form-group">
-          <label>Days</label>
-          <div class="days-picker">
-            <button type="button" class="day-btn" data-day="Mon">M</button>
-            <button type="button" class="day-btn" data-day="Tue">T</button>
-            <button type="button" class="day-btn" data-day="Wed">W</button>
-            <button type="button" class="day-btn" data-day="Thu">T</button>
-            <button type="button" class="day-btn" data-day="Fri">F</button>
-            <button type="button" class="day-btn" data-day="Sat">S</button>
-          </div>
-        </div>
-        <div id="day-times-container"></div>
-        <button type="submit" class="btn-save" style="width:100%; margin-top:15px;">Save Entry</button>
-        <button type="button" class="btn-delete" id="btn-delete-course" style="width:100%; margin-top:10px; background:transparent; color:#ef4444; border:none; display:none;">Delete</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Details -->
-  <div class="modal" id="modal-detail">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div id="detail-accent-bar" style="width:100%; height:4px; position:absolute; top:0; left:0;"></div>
-        <span class="modal-title" id="detail-course-name">Course Details</span>
-        <button class="modal-close" id="modal-detail-close">×</button>
-      </div>
-      <div class="detail-body">
-         <div id="detail-status-badge" class="status-badge"></div>
-         <div class="join-actions" id="detail-join-actions" style="margin-top:15px"></div>
-         <div class="section-title">Tasks</div>
-         <div id="todo-list" class="todo-list"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Settings -->
-  <div class="modal" id="modal-settings">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="modal-title">Settings</span>
-        <button class="modal-close" id="modal-settings-close">×</button>
-      </div>
-      <div class="settings-body">
-        <label>Cloud Sync (Firebase JSON)</label>
-        <textarea id="settings-firebase" placeholder="{...}"></textarea>
-        <button id="btn-sync-now" class="btn-save" style="margin-top:10px; width:100%">Test Sync</button>
-        
-        <label style="margin-top:20px; display:block">Ntfy Topic</label>
-        <input type="text" id="settings-ntfy" placeholder="topic_name">
-        
-        <button id="btn-settings-save" class="btn-save" style="margin-top:20px; width:100%">Save & Close</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-  <script src="app.js"></script>
+<body>
+    <header>
+        <h1>Welcome to the Scheduler App</h1>
+    </header>
+    <main>
+        <section id="task-input">
+            <h2>Add a New Task</h2>
+            <input type="text" id="task-name" placeholder="Task Name">
+            <input type="date" id="task-date">
+            <button id="add-task">Add Task</button>
+        </section>
+        <section id="task-list">
+            <h2>Your Tasks</h2>
+            <ul id="tasks">
+                <!-- Task items will be added here -->
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2026 Scheduler App</p>
+    </footer>
+    <script src="app.js"></script>
 </body>
 </html>
