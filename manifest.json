@@ -1,0 +1,17 @@
+{
+  "name": "Schedule Widget",
+  "short_name": "Schedule",
+  "description": "Academic productivity tool and schedule tracker.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#8b5cf6",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
