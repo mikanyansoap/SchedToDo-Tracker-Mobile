@@ -1,30 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SchedToDo Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Campus Hub</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#8b5cf6">
+  <link rel="apple-touch-icon" href="icon.png">
 </head>
-<body>
-    <div id="form-code"></div>
-    <div id="form-teams"></div>
-    <div id="form-zoom"></div>
-    <div class="color-dot"></div>
-    <div id="cal-selected-date"></div>
-    <div id="cal-day-courses"></div>
-    <div id="cal-day-tasks"></div>
-    <div id="cal-tasks-container"></div>
-    <div id="cal-empty-state"></div>
-    <div id="detail-course-meta"></div>
-    <input type="text" id="todo-input" placeholder="What needs to be done?">
-    <input type="date" id="todo-due-date">
-    <button id="btn-todo-add">Add Todo</button>
-    <div id="notes-area"></div>
-    <div id="notes-chars"></div>
-    <button id="btn-notes-save">Save Notes</button>
-    <div id="settings-firebase"></div>
-    <button id="btn-sync-now">Sync Now</button>
-    <button id="btn-test-ntfy">Test Notification</button>
-    <button id="btn-settings-cancel">Cancel Settings</button>
+<body class="theme-midnight">
+  <div class="widget-shell" id="app-root">
+    
+    <!-- Title Bar (Hidden on Mobile via CSS) -->
+    <div class="title-bar" id="drag-region">
+      <div class="title-left">
+        <span class="app-icon">🎓</span>
+        <span class="app-title">Campus Hub</span>
+      </div>
+      <div class="title-right">
+        <div class="window-controls">
+          <button class="ctrl-btn" id="btn-pin" title="Pin (stay on top)">📌</button>
+          <button class="ctrl-btn" id="btn-min" title="Minimize">─</button>
+          <button class="ctrl-btn close" id="btn-close" title="Close">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+      
+      <!-- Top Section: Clock & Quick Actions -->
+      <div class="top-section">
+        <div class="clock-display">
+          <div class="time-row">
+            <h1 id="clock-time">00:00</h1>
+            <div class="date-col">
+              <span id="clock-day">Day</span>
+              <span id="clock-date">Month 00, 2026</span>
+            </div>
+          </div>
+          <div class="status-ticker">
+            <span class="status-dot"></span>
+            <span id="today-status-text">Loading your day...</span>
+          </div>
+        </div>
+        
+        <div class="quick-tools">
+          <button class="tool-btn" id="btn-blackboard" title="Open Blackboard">
+            <span class="tool-icon">📓</span>
+          </button>
+          <button class="tool-btn" id="btn-teams" title="Open MS Teams">
+            <span class="tool-icon">🟣</span>
+          </button>
+          <button class="tool-btn add" id="btn-add" title="Add Course or Event">
+            <span class="tool-icon">+</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="tab-link active" id="tab-schedule">Agenda</button>
+        <button class="tab-link" id="tab-calendar">Calendar</button>
+        <button class="tab-link" id="tab-tasks">Tasks</button>
+        <button class="tab-link" id="tab-pulse">Pulse</button>
+        <button class="tab-settings" id="btn-settings" title="Settings">⚙️</button>
+      </div>
+
+      <!-- Scrolled Content Area -->
+      <div class="content-viewport">
+        
+        <!-- View: Agenda -->
+        <div class="view active" id="view-schedule">
+          <div class="course-list" id="course-list">
+            <!-- Cards injected here -->
+          </div>
+          <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">🏖️</div>
+            <h3>Nothing Scheduled</h3>
+            <p>You're all caught up for now.</p>
+          </div>
+        </div>
+
+        <!-- View: Calendar -->
+        <div class="view" id="view-calendar" style="display: none;">
+          <div class="calendar-widget">
+            <div class="cal-header">
+              <button class="cal-nav" id="cal-prev">ᐸ</button>
+              <h2 id="cal-month-year">April 2026</h2>
+              <button class="cal-nav" id="cal-next">ᐳ</button>
+            </div>
+            <div class="cal-weekdays">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+            <div class="cal-day-details" id="cal-day-details">
+               <div class="cal-details-header">
+                  <span id="cal-selected-date">Today</span>
+               </div>
+               <div id="cal-details-content">
+                  <!-- Day info here -->
+               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- View: Tasks -->
+        <div class="view" id="view-tasks" style="display: none;">
+          <div class="tasks-hub">
+            <div class="hub-header">
+              <div class="filter-group">
+                <select id="tasks-filter" class="hub-select">
+                  <option value="pending">Pending</option>
+                  <option value="done">Completed</option>
+                  <option value="all">All Tasks</option>
+                </select>
+                <select id="tasks-sort" class="hub-select">
+                  <option value="course">By Course</option>
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                </select>
+              </div>
+            </div>
+            <div class="all-tasks-list" id="all-tasks-list"></div>
+            <div class="empty-state" id="tasks-empty-state" style="display:none;">
+              <p>No tasks found.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- View: Pulse (Analytics) -->
+        <div class="view" id="view-pulse" style="display: none;">
+          <div class="pulse-container">
+            <div class="pulse-row">
+              <div class="pulse-card stat">
+                 <div class="stat-label">Done</div>
+                 <div class="stat-val" id="pulse-tasks-done">0</div>
+              </div>
+              <div class="pulse-card stat">
+                 <div class="stat-label">Pending</div>
+                 <div class="stat-val" id="pulse-tasks-left">0</div>
+              </div>
+            </div>
+            
+            <div class="pulse-card pomo">
+              <div class="pomo-header">🍅 Study Timer</div>
+              <div class="pomo-display" id="pomo-display">25:00</div>
+              <div class="pomo-actions">
+                <button class="pomo-btn main" id="pomo-start-btn">▶</button>
+                <button class="pomo-btn sec" id="pomo-reset-btn">↺</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- /viewport -->
+    </div> <!-- /main-container -->
+  </div> <!-- /shell -->
+
+  <!-- Modal: Course Form -->
+  <div class="modal-overlay" id="modal-form">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2 id="form-title">Add Entry</h2>
+        <button class="modal-close" id="modal-form-close">×</button>
+      </div>
+      <form class="modal-form" id="course-form">
+        <input type="hidden" id="form-id">
+        
+        <div class="type-switcher">
+          <button type="button" class="type-btn active" data-type="course">School Course</button>
+          <button type="button" class="type-btn" data-type="event">Personal Event</button>
+        </div>
+
+        <div class="form-group">
+          <label id="label-name">Course Name</label>
+          <input type="text" id="form-name" placeholder="e.g. Data Structures" required>
+        </div>
+        
+        <div class="form-group" id="group-code">
+          <label>Course Code</label>
+          <input type="text" id="form-code" placeholder="e.g. CS101">
+        </div>
+
+        <div class="form-group" id="group-date" style="display:none;">
+          <label>Date</label>
+          <input type="date" id="form-date">
+        </div>
+
+        <div class="form-group">
+          <label>Schedule & Times</label>
+          <div class="day-picker">
+            <button type="button" class="day-btn" data-day="Mon">M</button>
+            <button type="button" class="day-btn" data-day="Tue">T</button>
+            <button type="button" class="day-btn" data-day="Wed">W</button>
+            <button type="button" class="day-btn" data-day="Thu">T</button>
+            <button type="button" class="day-btn" data-day="Fri">F</button>
+            <button type="button" class="day-btn" data-day="Sat">S</button>
+            <button type="button" class="day-btn" data-day="Sun">S</button>
+          </div>
+          <div class="day-times-container" id="day-times-container">
+            <!-- Dynamic time rows -->
+          </div>
+        </div>
+
+        <div id="school-links">
+          <div class="form-group">
+            <label>Meeting (Teams/Zoom/etc)</label>
+            <input type="url" id="form-teams" placeholder="Paste link here...">
+          </div>
+          <div class="form-group">
+            <label>Project Folder</label>
+            <input type="text" id="form-folder" placeholder="C:\Users\...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Card Vibe</label>
+          <div class="color-picker">
+            <button type="button" class="color-dot active" data-color="#8b5cf6" style="background:#8b5cf6"></button>
+            <button type="button" class="color-dot" data-color="#ec4899" style="background:#ec4899"></button>
+            <button type="button" class="color-dot" data-color="#3b82f6" style="background:#3b82f6"></button>
+            <button type="button" class="color-dot" data-color="#10b981" style="background:#10b981"></button>
+            <button type="button" class="color-dot" data-color="#f59e0b" style="background:#f59e0b"></button>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn-delete" id="btn-delete-course" style="display:none">Delete</button>
+          <div class="footer-right">
+            <button type="button" class="btn-cancel" id="btn-form-cancel">Cancel</button>
+            <button type="submit" class="btn-save">Save Entry</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Details -->
+  <div class="modal-overlay" id="modal-detail">
+    <div class="modal-window wide">
+      <div class="detail-accent" id="detail-accent-bar"></div>
+      <div class="modal-header">
+        <h2 id="detail-course-name">Course Name</h2>
+        <button class="modal-close" id="modal-detail-close">×</button>
+      </div>
+      
+      <div class="detail-content">
+        <div class="detail-meta">
+          <div id="detail-status-badge" class="status-badge"></div>
+          <div id="detail-course-meta" class="meta-label">...</div>
+        </div>
+
+        <div class="detail-grid">
+          <!-- Left: Actions & Resources -->
+          <div class="detail-left">
+            <div class="detail-section">
+              <div class="section-top">
+                <span class="section-title">Classroom</span>
+                <button id="btn-panic-join" class="panic-btn">🚀 PANIC JOIN</button>
+              </div>
+              <div class="join-actions" id="detail-join-actions"></div>
+            </div>
+            
+            <div class="detail-section">
+              <div class="section-top">
+                <span class="section-title">Resources</span>
+                <button class="add-mini-btn" id="btn-resource-add">+</button>
+              </div>
+              <div class="resource-list" id="detail-resource-list"></div>
+            </div>
+          </div>
+
+          <!-- Right: Tasks -->
+          <div class="detail-right">
+            <div class="detail-section">
+              <div class="section-top">
+                <span class="section-title">To-Do List</span>
+                <span class="count-badge" id="todo-count-badge">0</span>
+              </div>
+              <div class="todo-input-row">
+                <input type="text" id="todo-input" placeholder="New task...">
+                <button id="btn-todo-add">Add</button>
+              </div>
+              <div class="todo-list" id="todo-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-footer">
+           <textarea id="notes-area" placeholder="Quick notes here..."></textarea>
+           <button class="btn-save mini" id="btn-notes-save">💾 Save Notes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="modal-close" id="modal-settings-close">×</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-group">
+          <label>Cloud Sync (Firebase JSON)</label>
+          <textarea id="settings-firebase" placeholder='{ "apiKey": "...", ... }'></textarea>
+          <button class="btn-save mini" id="btn-sync-now" style="margin-top:8px">Sync Now</button>
+        </div>
+        
+        <div class="settings-group">
+          <label>Ntfy Topic</label>
+          <input type="text" id="settings-ntfy" placeholder="my_secret_topic">
+        </div>
+
+        <div class="settings-group">
+          <label>Appearance</label>
+          <div class="theme-picker">
+            <button class="theme-btn" data-theme="midnight">Midnight</button>
+            <button class="theme-btn" data-theme="matcha">Matcha</button>
+            <button class="theme-btn" data-theme="cyber">Cyber</button>
+            <button class="theme-btn" data-theme="minimal">Minimal</button>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button class="btn-save" id="btn-settings-save" style="width:100%">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
