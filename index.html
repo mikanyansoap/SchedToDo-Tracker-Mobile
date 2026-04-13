@@ -3,30 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scheduler App</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>SchedToDo Tracker</title>
 </head>
 <body>
-    <header>
-        <h1>Welcome to the Scheduler App</h1>
-    </header>
-    <main>
-        <section id="task-input">
-            <h2>Add a New Task</h2>
-            <input type="text" id="task-name" placeholder="Task Name">
-            <input type="date" id="task-date">
-            <button id="add-task">Add Task</button>
-        </section>
-        <section id="task-list">
-            <h2>Your Tasks</h2>
-            <ul id="tasks">
-                <!-- Task items will be added here -->
-            </ul>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2026 Scheduler App</p>
-    </footer>
-    <script src="app.js"></script>
+    <div id="form-code"></div>
+    <div id="form-teams"></div>
+    <div id="form-zoom"></div>
+    <div class="color-dot"></div>
+    <div id="cal-selected-date"></div>
+    <div id="cal-day-courses"></div>
+    <div id="cal-day-tasks"></div>
+    <div id="cal-tasks-container"></div>
+    <div id="cal-empty-state"></div>
+    <div id="detail-course-meta"></div>
+    <input type="text" id="todo-input" placeholder="What needs to be done?">
+    <input type="date" id="todo-due-date">
+    <button id="btn-todo-add">Add Todo</button>
+    <div id="notes-area"></div>
+    <div id="notes-chars"></div>
+    <button id="btn-notes-save">Save Notes</button>
+    <div id="settings-firebase"></div>
+    <button id="btn-sync-now">Sync Now</button>
+    <button id="btn-test-ntfy">Test Notification</button>
+    <button id="btn-settings-cancel">Cancel Settings</button>
 </body>
 </html>
